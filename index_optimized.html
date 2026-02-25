@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>畅说英语 FreeSpeak</title>
+    <style>
+        :root {
+            --primary: #D7FA4B;
+            --secondary: #80BF00;
+            --white: #FFFFFF;
+            --light-gray: #F7F7F7;
+            --medium-gray: #A6A6A6;
+            --dark-gray: #333333;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-xxl: 20px;
+            --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-float: 0 4px 12px rgba(0, 0, 0, 0.12);
+            --shadow-modal: 0 8px 24px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background: var(--white);
+            min-height: 100vh;
+            padding-bottom: 100px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: var(--spacing-lg);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin-bottom: var(--spacing-sm);
+            line-height: 34px;
+        }
+
+        .page-header p {
+            font-size: 15px;
+            color: var(--medium-gray);
+            line-height: 20px;
+        }
+
+        .doc-section {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .doc-section h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: var(--spacing-md);
+            padding-left: var(--spacing-md);
+            border-left: 4px solid var(--primary);
+            line-height: 28px;
+        }
+
+        .doc-section h3 {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin: var(--spacing-lg) 0 var(--spacing-sm) 0;
+            line-height: 22px;
+        }
+
+        .doc-section p {
+            font-size: 15px;
+            color: #666666;
+            line-height: 22px;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .doc-section ul {
+            margin: 0 0 var(--spacing-sm) 0;
+            padding-left: var(--spacing-lg);
+        }
+
+        .doc-section li {
+            font-size: 15px;
+            color: #666666;
+            line-height: 22px;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .doc-section li strong {
+            color: var(--dark-gray);
+        }
+
+        .doc-section ul ul {
+            margin-top: var(--spacing-sm);
+        }
+
+        .page-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: var(--spacing-md);
+            background: var(--white);
+            border-top: 1px solid var(--light-gray);
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+            padding-bottom: calc(var(--spacing-md) + env(safe-area-inset-bottom));
+        }
+
+        .open-sheet-btn {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            display: block;
+            height: 50px;
+            background: var(--primary);
+            color: var(--dark-gray);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-float);
+        }
+
+        .open-sheet-btn:active {
+            opacity: 0.7;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sheet {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--white);
+            border-radius: var(--radius-xxl) var(--radius-xxl) 0 0;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 101;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-modal);
+        }
+
+        .sheet.active {
+            transform: translateY(0);
+        }
+
+        .sheet-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-md) var(--spacing-md) var(--spacing-md);
+            border-bottom: 1px solid var(--light-gray);
+            flex-shrink: 0;
+            position: relative;
+            padding-top: calc(var(--spacing-md) + env(safe-area-inset-top));
+        }
+
+        .sheet-handle {
+            width: 36px;
+            height: 4px;
+            background: var(--medium-gray);
+            border-radius: 2px;
+            position: absolute;
+            top: calc(var(--spacing-sm) + env(safe-area-inset-top));
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .sheet-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-top: 8px;
+        }
+
+        .close-btn {
+            position: absolute;
+            right: var(--spacing-md);
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            background: var(--light-gray);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .close-btn:active {
+            background: var(--primary);
+        }
+
+        .close-btn svg {
+            width: 20px;
+            height: 20px;
+            color: var(--medium-gray);
+        }
+
+        .close-btn:active svg {
+            color: var(--dark-gray);
+        }
+
+        .sheet-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-lg) var(--spacing-md);
+            display: flex;
+            flex-direction: column;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .step {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            min-height: 300px;
+        }
+
+        .step.active {
+            display: flex;
+        }
+
+        .step-1-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: var(--spacing-xl);
+            text-align: center;
+        }
+
+        .step-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: var(--spacing-sm);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 28px;
+        }
+
+        .step-subtitle {
+            font-size: 15px;
+            color: var(--medium-gray);
+            line-height: 20px;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .step-1-bottom {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: var(--spacing-xl);
+            margin-top: auto;
+        }
+
+        .record-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: var(--shadow-float);
+        }
+
+        .record-btn:active {
+            opacity: 0.7;
+            transform: scale(0.95);
+        }
+
+        .record-btn.recording {
+            background: var(--secondary);
+            animation: pulse 1.5s infinite;
+        }
+
+        .record-btn svg {
+            width: 48px;
+            height: 48px;
+            color: var(--dark-gray);
+        }
+
+        .record-btn.recording svg {
+            color: var(--white);
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 4px 12px rgba(128, 191, 0, 0.4);
+            }
+            50% {
+                box-shadow: 0 4px 12px rgba(128, 191, 0, 0.4), 0 0 0 20px rgba(128, 191, 0, 0);
+            }
+        }
+
+        .record-hint {
+            margin-top: var(--spacing-lg);
+            font-size: 15px;
+            color: var(--medium-gray);
+            line-height: 20px;
+        }
+
+        .text-card {
+            background: var(--light-gray);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            border-left: 4px solid var(--medium-gray);
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .text-card:active {
+            background: #EFEFEF;
+        }
+
+        .text-label {
+            font-size: 13px;
+            color: var(--medium-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
+            line-height: 18px;
+        }
+
+        .text-content {
+            font-size: 17px;
+            color: var(--dark-gray);
+            line-height: 22px;
+            outline: none;
+            border: 2px solid transparent;
+            border-radius: var(--radius-md);
+            padding: var(--spacing-sm);
+            margin: calc(var(--spacing-sm) * -1);
+            transition: var(--transition);
+        }
+
+        .text-content:focus {
+            border-color: var(--primary);
+            background: var(--white);
+        }
+
+        .text-card.english {
+            background: rgba(215, 250, 75, 0.15);
+            border-left-color: var(--primary);
+        }
+
+        .text-card.english .text-content {
+            font-size: 17px;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+
+        .text-card .edit-icon {
+            position: absolute;
+            top: var(--spacing-sm);
+            right: var(--spacing-sm);
+            width: 36px;
+            height: 36px;
+            background: var(--white);
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: var(--transition);
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .text-card:active .edit-icon {
+            opacity: 1;
+        }
+
+        .text-card .edit-icon svg {
+            width: 16px;
+            height: 16px;
+            color: var(--medium-gray);
+        }
+
+        .text-card .edit-icon:active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .text-card .edit-icon:active svg {
+            color: var(--dark-gray);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin: var(--spacing-lg) 0;
+        }
+
+        .action-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            height: 44px;
+            background: var(--light-gray);
+            color: var(--secondary);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-btn:active {
+            background: var(--primary);
+            color: var(--dark-gray);
+        }
+
+        .action-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .record-control {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: auto;
+            padding-top: var(--spacing-lg);
+        }
+
+        .record-status {
+            font-size: 15px;
+            color: var(--medium-gray);
+            margin-bottom: var(--spacing-md);
+            min-height: 20px;
+            line-height: 20px;
+        }
+
+        .record-status.recording {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .main-action-btn {
+            width: 100%;
+            height: 50px;
+            background: var(--primary);
+            color: var(--dark-gray);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-float);
+        }
+
+        .main-action-btn:active {
+            opacity: 0.7;
+        }
+
+        .main-action-btn.recording {
+            background: var(--secondary);
+            color: var(--white);
+            animation: pulse-btn 1.5s infinite;
+        }
+
+        .main-action-btn.success {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        @keyframes pulse-btn {
+            0%, 100% {
+                box-shadow: 0 4px 12px rgba(128, 191, 0, 0.3);
+            }
+            50% {
+                box-shadow: 0 4px 12px rgba(128, 191, 0, 0.3), 0 0 0 10px rgba(128, 191, 0, 0);
+            }
+        }
+
+        .post-record-buttons {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-sm);
+            width: 100%;
+        }
+
+        .secondary-btn {
+            flex: 1;
+            height: 44px;
+            background: var(--light-gray);
+            color: var(--secondary);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .secondary-btn:active {
+            background: var(--primary);
+            color: var(--dark-gray);
+        }
+
+        .toast {
+            position: fixed;
+            top: calc(var(--spacing-md) + env(safe-area-inset-top));
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--dark-gray);
+            color: var(--white);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            font-size: 15px;
+            opacity: 0;
+            transition: var(--transition);
+            pointer-events: none;
+            z-index: 200;
+            box-shadow: var(--shadow-float);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="page-header">
+            <h1>FreeSpeak</h1>
+            <p>功能演示 Demo 及说明</p>
+        </div>
+
+        <div class="page-content">
+            <section class="doc-section">
+                <h2>核心流程</h2>
+
+                <h3>步骤 1：中文语音录制</h3>
+                <ul>
+                    <li><strong>触发方式：</strong>用户点击录音按钮开始录制，再次点击停止</li>
+                    <li><strong>实时反馈：</strong>录音过程中，标题区域实时显示语音识别结果</li>
+                    <li><strong>示例数据：</strong>"这里是你正在说的内容，此为演示数据。"</li>
+                </ul>
+
+                <h3>步骤 2：翻译及跟读练习</h3>
+                <ul>
+                    <li><strong>展示内容：</strong>同时显示中文原文和英文翻译结果</li>
+                    <li><strong>编辑功能：</strong>点击中文区域可直接修改原文，AI翻译会同步更新</li>
+                    <li><strong>辅助功能：</strong>
+                        <ul>
+                            <li>朗读按钮：播放英文标准发音</li>
+                            <li>笔记按钮：保存当前练习内容到学习记录</li>
+                        </ul>
+                    </li>
+                    <li><strong>跟读流程：</strong>
+                        <ul>
+                            <li>点击"开始跟读"按钮开始录制</li>
+                            <li>再次点击停止录制</li>
+                            <li>录制完成后可试听录音或重新录制</li>
+                            <li>点击"发送"完成练习</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+        </div>
+
+        <div class="page-footer">
+            <button class="open-sheet-btn" id="openSheetBtn">
+                FreeSpeak - 畅说
+            </button>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="sheet" id="sheet">
+        <div class="sheet-header">
+            <div class="sheet-handle"></div>
+            <div class="sheet-title">FreeSpeak</div>
+            <button class="close-btn" id="closeBtn">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+            </button>
+        </div>
+        <div class="sheet-content">
+            <div class="step step-1 active" id="step1">
+                <div class="step-1-content">
+                    <div class="step-title">想说什么就说什么，我们帮你变成英语</div>
+                </div>
+                <div class="step-1-bottom">
+                    <button class="record-btn" id="chineseRecordBtn">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+                        </svg>
+                    </button>
+                    <div class="record-hint" id="chineseRecordHint">点击开始录音</div>
+                </div>
+            </div>
+
+            <div class="step step-2" id="step2">
+                <div class="text-card" id="chineseTextCard">
+                    <div class="edit-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                        </svg>
+                    </div>
+                    <div class="text-label">你说的中文</div>
+                    <div class="text-content" id="chineseText" contenteditable="true">今天天气真好，我想去公园散步</div>
+                </div>
+                <div class="text-card english" id="englishTextCard">
+                    <div class="text-label">AI 翻译</div>
+                    <div class="text-content" id="englishText">The weather is nice today. I'd like to take a walk in the park.</div>
+                </div>
+                <div class="action-buttons">
+                    <button class="action-btn" id="readBtn">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                        </svg>
+                        朗读
+                    </button>
+                    <button class="action-btn" id="noteBtn">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                        </svg>
+                        添加到笔记
+                    </button>
+                </div>
+                <div class="record-control">
+                    <div class="record-status" id="recordStatus">点击下方按钮开始跟读</div>
+                    <button class="main-action-btn" id="englishRecordBtn">开始跟读</button>
+                    <div class="post-record-buttons" style="display: none;">
+                        <button class="secondary-btn" id="retryBtn">重新录制</button>
+                        <button class="action-btn" id="playRecordingBtn">试听录音</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const openSheetBtn = document.getElementById('openSheetBtn');
+        const overlay = document.getElementById('overlay');
+        const sheet = document.getElementById('sheet');
+        const closeBtn = document.getElementById('closeBtn');
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const chineseRecordBtn = document.getElementById('chineseRecordBtn');
+        const chineseRecordHint = document.getElementById('chineseRecordHint');
+        const englishRecordBtn = document.getElementById('englishRecordBtn');
+        const recordStatus = document.getElementById('recordStatus');
+        const readBtn = document.getElementById('readBtn');
+        const noteBtn = document.getElementById('noteBtn');
+        const retryBtn = document.getElementById('retryBtn');
+        const playRecordingBtn = document.getElementById('playRecordingBtn');
+        const postRecordButtons = document.querySelector('.post-record-buttons');
+        const toast = document.getElementById('toast');
+        const stepTitle = document.querySelector('.step-title');
+
+        let isChineseRecording = false;
+        let isEnglishRecording = false;
+        let typingTimer = null;
+        const demoText = "这里是你正在说的内容，此为演示数据。";
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        function openSheet() {
+            overlay.classList.add('active');
+            sheet.classList.add('active');
+            resetFlow();
+        }
+
+        function closeSheet() {
+            overlay.classList.remove('active');
+            sheet.classList.remove('active');
+        }
+
+        function resetFlow() {
+            step1.classList.add('active');
+            step2.classList.remove('active');
+
+            isChineseRecording = false;
+            isEnglishRecording = false;
+
+            if (typingTimer) {
+                clearInterval(typingTimer);
+                typingTimer = null;
+            }
+
+            chineseRecordBtn.classList.remove('recording');
+            stepTitle.textContent = '想说什么就说什么，我们帮你变成英语';
+            chineseRecordHint.textContent = '点击开始录音';
+
+            englishRecordBtn.textContent = '开始跟读';
+            englishRecordBtn.classList.remove('recording', 'success');
+            recordStatus.textContent = '点击下方按钮开始跟读';
+            recordStatus.classList.remove('recording');
+            postRecordButtons.style.display = 'none';
+        }
+
+        openSheetBtn.addEventListener('click', openSheet);
+        overlay.addEventListener('click', closeSheet);
+        closeBtn.addEventListener('click', closeSheet);
+
+        chineseRecordBtn.addEventListener('click', () => {
+            if (!isChineseRecording) {
+                isChineseRecording = true;
+                chineseRecordBtn.classList.add('recording');
+                stepTitle.textContent = '';
+
+                let charIndex = 0;
+                const typingSpeed = 5000 / demoText.length;
+
+                typingTimer = setInterval(() => {
+                    if (charIndex < demoText.length) {
+                        stepTitle.textContent += demoText[charIndex];
+                        charIndex++;
+                    } else {
+                        clearInterval(typingTimer);
+                    }
+                }, typingSpeed);
+
+                chineseRecordHint.textContent = '录音中...';
+            } else {
+                isChineseRecording = false;
+                chineseRecordBtn.classList.remove('recording');
+
+                if (typingTimer) {
+                    clearInterval(typingTimer);
+                    typingTimer = null;
+                }
+
+                stepTitle.textContent = demoText;
+
+                setTimeout(() => {
+                    chineseRecordHint.textContent = '处理中...';
+                }, 500);
+
+                setTimeout(() => {
+                    step1.classList.remove('active');
+                    step2.classList.add('active');
+                }, 1000);
+            }
+        });
+
+        englishRecordBtn.addEventListener('click', () => {
+            if (englishRecordBtn.classList.contains('success') && englishRecordBtn.textContent === '发送') {
+                showToast('✓ 发送成功');
+                setTimeout(() => {
+                    closeSheet();
+                }, 1500);
+                return;
+            }
+
+            if (!isEnglishRecording) {
+                isEnglishRecording = true;
+                englishRecordBtn.classList.add('recording');
+                englishRecordBtn.textContent = '停止跟读';
+                recordStatus.textContent = '正在录音...';
+                recordStatus.classList.add('recording');
+            } else {
+                isEnglishRecording = false;
+                englishRecordBtn.classList.remove('recording');
+                englishRecordBtn.textContent = '发送';
+                recordStatus.textContent = '录音完成';
+                recordStatus.classList.remove('recording');
+                englishRecordBtn.classList.add('success');
+                postRecordButtons.style.display = 'flex';
+            }
+        });
+
+        readBtn.addEventListener('click', () => {
+            showToast('朗读功能开发中...');
+        });
+
+        noteBtn.addEventListener('click', () => {
+            showToast('已添加到笔记');
+        });
+
+        retryBtn.addEventListener('click', () => {
+            postRecordButtons.style.display = 'none';
+            englishRecordBtn.textContent = '开始跟读';
+            englishRecordBtn.classList.remove('success');
+            recordStatus.textContent = '点击下方按钮开始跟读';
+        });
+
+        playRecordingBtn.addEventListener('click', () => {
+            showToast('试听功能开发中...');
+        });
+    </script>
+</body>
+</html>
