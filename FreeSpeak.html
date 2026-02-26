@@ -661,10 +661,54 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
+
+        .history-btn-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            padding-top: 10px;
+        }
+
+        .history-btn {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            background: #F7F7F7;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .history-btn:hover {
+            background: #D7FA4B;
+            transform: translateY(-2px);
+        }
+
+        .history-btn svg {
+            width: 20px;
+            height: 20px;
+            color: #666666;
+        }
+
+        .history-btn:hover svg {
+            color: #333333;
+        }
     </style>
 </head>
 <body>
     <div class="page">
+        <div class="history-btn-wrapper">
+            <button class="history-btn" onclick="window.location.href='history.html'" title="历史版本需求">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+                </svg>
+            </button>
+        </div>
+
         <div class="page-header">
             <h1>FreeSpeak</h1>
             <p>功能演示 Demo 及说明</p>
